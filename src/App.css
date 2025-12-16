@@ -769,6 +769,9 @@ button.ghost:hover {
 
 .invoice-builder .preview-panel {
   background: linear-gradient(165deg, rgba(248, 250, 255, 0.95) 0%, #ffffff 45%);
+  width: 100%;
+  max-width: 840px;
+  margin: 0 auto;
 }
 
 .invoice-builder .preview-header {
@@ -797,6 +800,11 @@ button.ghost:hover {
 .invoice-builder .preview-meta span {
   font-weight: 600;
   color: var(--ink-700);
+}
+
+.invoice-builder .payment-method-line {
+  font-size: 0.9rem;
+  color: var(--ink-500);
 }
 
 .invoice-builder .preview-entities {

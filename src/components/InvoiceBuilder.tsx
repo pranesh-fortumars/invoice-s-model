@@ -101,6 +101,7 @@ export const InvoiceBuilder = () => {
     () => gatewayChannels.find((channel) => channel.status === 'Enabled') ?? gatewayChannels[0],
     [gatewayChannels],
   )
+  const acceptedChannelSummary = useMemo(() => gatewayChannels.map((channel) => channel.label).join(' • '), [gatewayChannels])
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) {
@@ -786,6 +787,10 @@ export const InvoiceBuilder = () => {
             <p>
               Online collections managed through <strong>{PAYMENT_GATEWAY.providerName}</strong>. Current status:{' '}
               <span className={`gateway-tag ${PAYMENT_GATEWAY.status.toLowerCase()}`}>{PAYMENT_GATEWAY.status}</span>
+            </p>
+            <p className="payment-method-line">
+              Accepted methods:{' '}
+              <strong>{acceptedChannelSummary || 'Bank transfer'}</strong>
             </p>
             <div className="gateway-details">
               <div>
