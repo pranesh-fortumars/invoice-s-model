@@ -55,3 +55,36 @@ export interface InvoiceFormState {
   terms: string
   additionalNote: string
 }
+
+export type InvoiceStatus = 'Draft' | 'Pending' | 'Paid' | 'Overdue'
+
+export interface InvoiceRecord {
+  id: string
+  invoiceNumber: string
+  clientId: string
+  engagement: string
+  currency: InvoiceFormState['currency']
+  amount: number
+  status: InvoiceStatus
+  issueDate: string
+  dueDate: string
+  lastUpdated: string
+}
+
+export interface ActivityLog {
+  id: string
+  timestamp: string
+  summary: string
+  actor: string
+  activityType: 'invoice' | 'payment' | 'reminder' | 'note'
+  relatedInvoiceId?: string
+}
+
+export interface TeamMember {
+  id: string
+  name: string
+  role: string
+  email: string
+  avatarColor: string
+  initials: string
+}

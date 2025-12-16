@@ -1,4 +1,10 @@
-import type { ClientProfile, Service } from './types'
+import type {
+  ActivityLog,
+  ClientProfile,
+  InvoiceRecord,
+  Service,
+  TeamMember,
+} from './types'
 
 export const ORGANIZATION = {
   legalName: 'Aurora Digital Solutions Pvt. Ltd.',
@@ -81,6 +87,150 @@ export const SERVICE_CATALOG: Service[] = [
       'Secure API integration including documentation, testing, and deployment support.',
     unit: 'Integration Package',
     unitRate: 132000,
+  },
+]
+
+export const INVOICE_LEDGER: InvoiceRecord[] = [
+  {
+    id: 'inv-001',
+    invoiceNumber: 'ADS-2025-043',
+    clientId: 'cl-aurora-001',
+    engagement: 'Digital Growth Retainer',
+    currency: 'INR',
+    amount: 215000,
+    status: 'Pending',
+    issueDate: '2025-06-02',
+    dueDate: '2025-06-17',
+    lastUpdated: '2025-06-05',
+  },
+  {
+    id: 'inv-002',
+    invoiceNumber: 'ADS-2025-041',
+    clientId: 'cl-aurora-002',
+    engagement: 'eCommerce Revamp Sprint 2',
+    currency: 'INR',
+    amount: 275000,
+    status: 'Overdue',
+    issueDate: '2025-05-10',
+    dueDate: '2025-05-25',
+    lastUpdated: '2025-06-10',
+  },
+  {
+    id: 'inv-003',
+    invoiceNumber: 'ADS-2025-039',
+    clientId: 'cl-aurora-003',
+    engagement: 'Warehouse Ops Automation',
+    currency: 'INR',
+    amount: 198500,
+    status: 'Paid',
+    issueDate: '2025-04-28',
+    dueDate: '2025-05-12',
+    lastUpdated: '2025-05-09',
+  },
+  {
+    id: 'inv-004',
+    invoiceNumber: 'ADS-2025-034',
+    clientId: 'cl-aurora-002',
+    engagement: 'Social Media Campaign Q2',
+    currency: 'INR',
+    amount: 86000,
+    status: 'Paid',
+    issueDate: '2025-04-01',
+    dueDate: '2025-04-16',
+    lastUpdated: '2025-04-13',
+  },
+  {
+    id: 'inv-005',
+    invoiceNumber: 'ADS-2025-029',
+    clientId: 'cl-aurora-001',
+    engagement: 'SEO Retainer - April',
+    currency: 'INR',
+    amount: 65000,
+    status: 'Paid',
+    issueDate: '2025-03-31',
+    dueDate: '2025-04-15',
+    lastUpdated: '2025-04-10',
+  },
+  {
+    id: 'inv-006',
+    invoiceNumber: 'ADS-2025-045',
+    clientId: 'cl-aurora-003',
+    engagement: 'API Integration Support',
+    currency: 'INR',
+    amount: 132000,
+    status: 'Draft',
+    issueDate: '2025-06-12',
+    dueDate: '2025-06-27',
+    lastUpdated: '2025-06-12',
+  },
+]
+
+export const ACTIVITY_LOG: ActivityLog[] = [
+  {
+    id: 'act-001',
+    timestamp: '2025-06-12T09:45:00+05:30',
+    summary: 'Invoice ADS-2025-045 saved as draft by Priya Shah',
+    actor: 'Priya Shah',
+    activityType: 'invoice',
+    relatedInvoiceId: 'inv-006',
+  },
+  {
+    id: 'act-002',
+    timestamp: '2025-06-11T17:10:00+05:30',
+    summary: 'Payment of ₹1,98,500 received for ADS-2025-039',
+    actor: 'Auto-Reconcile Bot',
+    activityType: 'payment',
+    relatedInvoiceId: 'inv-003',
+  },
+  {
+    id: 'act-003',
+    timestamp: '2025-06-10T11:05:00+05:30',
+    summary: 'Reminder email sent to Helios Retail for overdue invoice',
+    actor: 'Collections Suite',
+    activityType: 'reminder',
+    relatedInvoiceId: 'inv-002',
+  },
+  {
+    id: 'act-004',
+    timestamp: '2025-06-08T15:20:00+05:30',
+    summary: 'Internal note added about Nimbus Finserve contract renewal',
+    actor: 'Karan Patel',
+    activityType: 'note',
+  },
+]
+
+export const TEAM_MEMBERS: TeamMember[] = [
+  {
+    id: 'tm-01',
+    name: 'Priya Shah',
+    role: 'Finance Lead',
+    email: 'priya.shah@auroradigital.in',
+    avatarColor: '#7F5AF0',
+    initials: 'PS',
+  },
+  {
+    id: 'tm-02',
+    name: 'Karan Patel',
+    role: 'Account Strategist',
+    email: 'karan.patel@auroradigital.in',
+    avatarColor: '#00A896',
+    initials: 'KP',
+  },
+  {
+    id: 'tm-03',
+    name: 'Megha Rao',
+    role: 'Collections Specialist',
+    email: 'megha.rao@auroradigital.in',
+    avatarColor: '#EF8354',
+    initials: 'MR',
+  },
+  {
+    id: 'tm-04',
+    name: 'Arjun Desai',
+    role: 'Delivery Director',
+    email: 'arjun.desai@auroradigital.in',
+    avatarColor: '#355070',
+    initials: 'AD',
   },
 ]
 
