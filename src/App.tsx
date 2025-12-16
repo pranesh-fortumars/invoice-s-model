@@ -8,6 +8,7 @@ import {
   PAYMENT_GATEWAY,
   PAYMENT_TRANSACTIONS,
   SERVICE_CATALOG,
+  SERVICE_SHOWCASES,
   TEAM_MEMBERS,
 } from './data'
 import type {
@@ -16,6 +17,7 @@ import type {
   InvoiceStatus,
   PaymentGatewayChannel,
   PaymentTransaction,
+  ServiceShowcase,
 } from './types'
 import { InvoiceBuilder } from './components/InvoiceBuilder'
 
@@ -514,6 +516,37 @@ function App() {
                           maximumFractionDigits: 0,
                         }).format(service.unitRate)}
                       </strong>
+                    </footer>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="module-card span-2">
+              <header className="module-heading">
+                <div>
+                  <h2>Service spotlight</h2>
+                  <p>Positioning decks and delivery promises for high-value programs.</p>
+                </div>
+              </header>
+              <div className="service-showcase-grid">
+                {SERVICE_SHOWCASES.map((item: ServiceShowcase) => (
+                  <article key={item.id} className="service-showcase-card">
+                    <header>
+                      <h3>{item.headline}</h3>
+                      <span>{item.persona}</span>
+                    </header>
+                    <p>{item.summary}</p>
+                    <ul>
+                      {item.deliverables.map((deliverable) => (
+                        <li key={deliverable}>{deliverable}</li>
+                      ))}
+                    </ul>
+                    <footer>
+                      <span>{item.projectedTimeline}</span>
+                      <button type="button" className="outline">
+                        View proposal
+                      </button>
                     </footer>
                   </article>
                 ))}

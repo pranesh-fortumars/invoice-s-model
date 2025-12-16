@@ -135,3 +135,12 @@ export interface PaymentTransaction {
   netAmount: number
   reference: string
 }
+
+export interface ServiceShowcase {
+  id: string
+  headline: string
+  summary: string
+  deliverables: string[]
+  persona: string
+  projectedTimeline: string
+}

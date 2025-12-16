@@ -5,6 +5,7 @@ import type {
   PaymentGatewayConfig,
   PaymentTransaction,
   Service,
+  ServiceShowcase,
   TeamMember,
 } from './types'
 
@@ -89,6 +90,36 @@ export const SERVICE_CATALOG: Service[] = [
       'Secure API integration including documentation, testing, and deployment support.',
     unit: 'Integration Package',
     unitRate: 132000,
+  },
+]
+
+export const SERVICE_SHOWCASES: ServiceShowcase[] = [
+  {
+    id: 'svc-feat-001',
+    headline: 'Retainer playbook: Digital growth command centre',
+    summary:
+      'A quarterly program combining SEO, performance media, and marketing automation to deliver measurable pipeline lift for BFSI clients.',
+    deliverables: ['SEO sprints', 'Performance media ops', 'Monthly CX analytics', 'Executive scorecards'],
+    persona: 'Marketing Directors • BFSI',
+    projectedTimeline: '12-week onboarding • then monthly cadence',
+  },
+  {
+    id: 'svc-feat-002',
+    headline: 'Commerce accelerator: High-converting eCommerce relaunch',
+    summary:
+      'Full-stack rebuild of customer journeys, integrating Razorpay Enterprise and headless CMS for omnichannel retail brands.',
+    deliverables: ['UX journey remap', 'Headless storefront', 'Payment orchestration', 'Post-launch CRO roadmap'],
+    persona: 'VP Digital • Retail & D2C',
+    projectedTimeline: '16-week transformation sprint',
+  },
+  {
+    id: 'svc-feat-003',
+    headline: 'Operations automation: Logistics API command suite',
+    summary:
+      'Microservice architecture to consolidate warehouse, transport and finance signals with real-time reconciliation dashboards.',
+    deliverables: ['Integration blueprint', 'Custom middleware', 'Invoice automation', '24/7 observability'],
+    persona: 'COO • Logistics & Supply Chain',
+    projectedTimeline: 'Discovery + 3 agile increments',
   },
 ]
 
