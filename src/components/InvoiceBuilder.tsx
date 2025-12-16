@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ChangeEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import '../App.css'
 import { CLIENT_DIRECTORY, ORGANIZATION, SERVICE_CATALOG } from '../data'
 import type {
@@ -93,7 +93,35 @@ const serviceLookup = SERVICE_CATALOG.reduce<Record<string, Service>>((acc, serv
 
 export const InvoiceBuilder = () => {
   const [formState, setFormState] = useState<InvoiceFormState>(() => createInitialState())
+  const [layoutMode, setLayoutMode] = useState<'split' | 'form' | 'preview'>('form')
   const previewRef = useRef<HTMLDivElement>(null)
+  const hasUserSelectedLayout = useRef(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) {
+      setLayoutMode('split')
+      return
+    }
+
+    const mediaQuery = window.matchMedia('(min-width: 1280px)')
+
+    const applyLayout = (matches: boolean) => {
+      if (hasUserSelectedLayout.current) {
+        return
+      }
+      setLayoutMode(matches ? 'split' : 'form')
+    }
+
+    applyLayout(mediaQuery.matches)
+
+    const listener = (event: MediaQueryListEvent) => {
+      applyLayout(event.matches)
+    }
+
+    mediaQuery.addEventListener('change', listener)
+
+    return () => mediaQuery.removeEventListener('change', listener)
+  }, [])
 
   const currencyFormatter = useMemo(
     () =>
@@ -238,6 +266,18 @@ export const InvoiceBuilder = () => {
     }
   }
 
+  const handleLayoutModeChange = (mode: 'split' | 'form' | 'preview') => {
+    hasUserSelectedLayout.current = true
+    setLayoutMode(mode)
+    if (mode === 'preview') {
+      previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
+  const workspaceClassName = `workspace layout-${layoutMode}`
+  const formPanelClassName = `form-panel${layoutMode === 'preview' ? ' is-hidden' : ''}`
+  const previewPanelClassName = `preview-panel${layoutMode === 'form' ? ' is-hidden' : ''}`
+
   return (
     <div className="invoice-builder">
       <header className="page-header">
@@ -268,10 +308,33 @@ export const InvoiceBuilder = () => {
         <button type="button" className="outline" onClick={handlePrintInvoice}>
           Print Invoice
         </button>
+        <div className="layout-toggle" role="group" aria-label="Invoice layout mode">
+          <button
+            type="button"
+            className={layoutMode === 'form' ? 'active' : ''}
+            onClick={() => handleLayoutModeChange('form')}
+          >
+            Form only
+          </button>
+          <button
+            type="button"
+            className={layoutMode === 'split' ? 'active' : ''}
+            onClick={() => handleLayoutModeChange('split')}
+          >
+            Split view
+          </button>
+          <button
+            type="button"
+            className={layoutMode === 'preview' ? 'active' : ''}
+            onClick={() => handleLayoutModeChange('preview')}
+          >
+            Preview only
+          </button>
+        </div>
       </div>
 
-      <main className="workspace">
-        <section className="form-panel">
+      <main className={workspaceClassName}>
+        <section className={formPanelClassName}>
           <h2>Invoice Builder</h2>
 
           <div className="form-section">
@@ -592,7 +655,7 @@ export const InvoiceBuilder = () => {
           </div>
         </section>
 
-        <section className="preview-panel" ref={previewRef}>
+        <section className={previewPanelClassName} ref={previewRef}>
           <div className="preview-header">
             <div>
               <h2>Invoice</h2>

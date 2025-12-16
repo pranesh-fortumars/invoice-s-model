@@ -545,8 +545,59 @@ button.ghost:hover {
 
 .invoice-builder .workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
   gap: 2rem;
+  align-items: start;
+}
+
+.invoice-builder .workspace.layout-split {
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+}
+
+.invoice-builder .workspace.layout-form,
+.invoice-builder .workspace.layout-preview {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.invoice-builder .form-panel.is-hidden,
+.invoice-builder .preview-panel.is-hidden {
+  display: none;
+}
+
+.action-toolbar {
+  flex-wrap: wrap;
+}
+
+.layout-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(35, 62, 120, 0.05);
+  padding: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(35, 62, 120, 0.14);
+  margin-left: auto;
+}
+
+.layout-toggle button {
+  border: none;
+  background: transparent;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ink-500);
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
+}
+
+.layout-toggle button:hover {
+  color: var(--ink-700);
+}
+
+.layout-toggle button.active {
+  background: linear-gradient(135deg, rgba(35, 62, 120, 0.18), rgba(35, 62, 120, 0.1));
+  color: var(--accent-600);
+  transform: translateY(-1px);
 }
 
 .invoice-builder .form-panel,
@@ -1016,6 +1067,12 @@ button.ghost:hover {
   .invoice-builder .line-items-track {
     min-width: 720px;
   }
+
+  .layout-toggle {
+    width: 100%;
+    justify-content: space-between;
+    margin-left: 0;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1064,6 +1121,16 @@ button.ghost:hover {
 
   .invoice-builder .line-items-track {
     min-width: 640px;
+  }
+
+  .layout-toggle {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.3rem;
+  }
+
+  .layout-toggle button {
+    width: 100%;
   }
 }
 
