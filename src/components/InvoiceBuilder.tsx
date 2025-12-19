@@ -55,6 +55,7 @@ const addDays = (date: Date, days: number) => {
 const generateId = () => Math.random().toString(36).slice(2, 10)
 
 const INVOICE_ARCHIVE_STORAGE_KEY = 'invoice-archive.v1'
+const INVOICE_DRAFT_STORAGE_KEY = 'invoice-draft.v1'
 
 const safeJsonParse = <T,>(value: string | null): T | null => {
   if (!value) {
@@ -70,6 +71,11 @@ const safeJsonParse = <T,>(value: string | null): T | null => {
 const cloneFormState = (state: InvoiceFormState): InvoiceFormState => {
   const serialized = JSON.stringify(state)
   return JSON.parse(serialized) as InvoiceFormState
+}
+
+type DraftInvoicePayload = {
+  savedAt: string
+  formState: InvoiceFormState
 }
 
 const createLineItem = (service?: Service): LineItem => ({
@@ -120,6 +126,12 @@ export const InvoiceBuilder = () => {
     return Array.isArray(stored) ? stored : []
   })
   const [selectedSavedInvoiceId, setSelectedSavedInvoiceId] = useState('')
+  const [draftPayload, setDraftPayload] = useState<DraftInvoicePayload | null>(() => {
+    const stored = safeJsonParse<DraftInvoicePayload>(
+      typeof window === 'undefined' ? null : window.localStorage.getItem(INVOICE_DRAFT_STORAGE_KEY),
+    )
+    return stored ?? null
+  })
   const previewRef = useRef<HTMLDivElement>(null)
   const hasUserSelectedLayout = useRef(false)
   const gatewayChannels = useMemo(() => PAYMENT_GATEWAY.channels.filter((channel) => channel.status !== 'Disabled'), [])
@@ -161,6 +173,23 @@ export const InvoiceBuilder = () => {
     }
     window.localStorage.setItem(INVOICE_ARCHIVE_STORAGE_KEY, JSON.stringify(savedInvoices))
   }, [savedInvoices])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    const handle = window.setTimeout(() => {
+      const payload: DraftInvoicePayload = {
+        savedAt: new Date().toISOString(),
+        formState: cloneFormState(formState),
+      }
+      window.localStorage.setItem(INVOICE_DRAFT_STORAGE_KEY, JSON.stringify(payload))
+      setDraftPayload(payload)
+    }, 800)
+
+    return () => window.clearTimeout(handle)
+  }, [formState])
 
   const currencyFormatter = useMemo(
     () =>
@@ -383,6 +412,46 @@ export const InvoiceBuilder = () => {
     setSelectedSavedInvoiceId(invoice.id)
   }
 
+  const handleUpdateSavedInvoiceCopy = () => {
+    if (!selectedSavedInvoiceId) {
+      return
+    }
+
+    const issues = validateInvoice(formState)
+    if (issues.length && typeof window !== 'undefined') {
+      const proceed = window.confirm(`Some details are missing:\n\n${issues.join('\n')}\n\nUpdate anyway?`)
+      if (!proceed) {
+        return
+      }
+    }
+
+    const savedAt = new Date().toISOString()
+    setSavedInvoices((prev) =>
+      prev.map((inv) =>
+        inv.id === selectedSavedInvoiceId
+          ? {
+              ...inv,
+              invoiceNumber: formState.meta.invoiceNumber,
+              savedAt,
+              formState: cloneFormState(formState),
+            }
+          : inv,
+      ),
+    )
+  }
+
+  const handleDuplicateSavedInvoiceCopy = () => {
+    const savedAt = new Date().toISOString()
+    const invoice: StoredInvoice = {
+      id: generateId(),
+      invoiceNumber: formState.meta.invoiceNumber,
+      savedAt,
+      formState: cloneFormState(formState),
+    }
+    setSavedInvoices((prev) => [invoice, ...prev])
+    setSelectedSavedInvoiceId(invoice.id)
+  }
+
   const handleLoadSavedInvoice = (id: string) => {
     const match = savedInvoices.find((inv) => inv.id === id)
     if (!match) {
@@ -438,8 +507,37 @@ export const InvoiceBuilder = () => {
           return
         }
       }
-      window.print()
+
+      const previousLayoutMode = layoutMode
+      const previousUserSelection = hasUserSelectedLayout.current
+      hasUserSelectedLayout.current = true
+      setLayoutMode('preview')
+
+      const restore = () => {
+        window.removeEventListener('afterprint', restore)
+        hasUserSelectedLayout.current = previousUserSelection
+        setLayoutMode(previousLayoutMode)
+      }
+
+      window.addEventListener('afterprint', restore)
+      window.setTimeout(() => window.print(), 50)
     }
+  }
+
+  const handleRestoreDraft = () => {
+    if (!draftPayload) {
+      return
+    }
+    setFormState(cloneFormState(draftPayload.formState))
+    hasUserSelectedLayout.current = true
+    setLayoutMode('form')
+  }
+
+  const handleClearDraft = () => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(INVOICE_DRAFT_STORAGE_KEY)
+    }
+    setDraftPayload(null)
   }
 
   const handleLayoutModeChange = (mode: 'split' | 'form' | 'preview') => {
@@ -523,6 +621,17 @@ export const InvoiceBuilder = () => {
             type="button"
             className="ghost"
             disabled={!selectedSavedInvoiceId}
+            onClick={handleUpdateSavedInvoiceCopy}
+          >
+            Update copy
+          </button>
+          <button type="button" className="ghost" onClick={handleDuplicateSavedInvoiceCopy}>
+            Duplicate
+          </button>
+          <button
+            type="button"
+            className="ghost"
+            disabled={!selectedSavedInvoiceId}
             onClick={() => handleDeleteSavedInvoice(selectedSavedInvoiceId)}
           >
             Delete
@@ -552,6 +661,22 @@ export const InvoiceBuilder = () => {
           </button>
         </div>
       </div>
+
+      {draftPayload ? (
+        <div className="draft-banner">
+          <p>
+            Draft auto-saved {new Date(draftPayload.savedAt).toLocaleString(currencyLocaleMap[formState.currency])}
+          </p>
+          <div className="draft-actions">
+            <button type="button" className="ghost" onClick={handleRestoreDraft}>
+              Restore
+            </button>
+            <button type="button" className="ghost" onClick={handleClearDraft}>
+              Clear
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <main className={workspaceClassName}>
         <section className={formPanelClassName}>

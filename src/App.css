@@ -660,6 +660,24 @@ button.ghost:hover {
   color: var(--ink-700);
 }
 
+.draft-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: var(--radius-sm);
+  border: 1px dashed rgba(35, 62, 120, 0.35);
+  background: rgba(35, 62, 120, 0.06);
+  color: var(--ink-600);
+}
+
+.draft-actions {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .layout-toggle button {
   border: none;
   background: transparent;
@@ -1581,6 +1599,7 @@ button.ghost:hover {
 
   .action-toolbar,
   .line-item-actions,
+  .draft-banner,
   button {
     display: none !important;
   }
@@ -1625,6 +1644,10 @@ button.ghost:hover {
 
   .invoice-builder .form-panel {
     display: none;
+  }
+
+  .invoice-builder .preview-panel.is-hidden {
+    display: block !important;
   }
 
   .invoice-builder .gateway-block {
