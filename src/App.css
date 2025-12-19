@@ -1712,13 +1712,30 @@ button.ghost:hover {
 /* Mobile menu button */
 .mobile-menu-btn {
   display: none;
-  background: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1001;
+  background: var(--accent-600);
+  color: white;
   border: none;
-  font-size: 1.5rem;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  padding: 0.5rem;
-  margin: -0.5rem;
-  color: var(--ink-600);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.mobile-menu-btn:hover {
+  background: var(--accent-700);
+  transform: scale(1.05);
+}
+
+.mobile-menu-btn:active {
+  transform: scale(0.95);
 }
 
 @media (max-width: 1024px) {
@@ -1726,6 +1743,11 @@ button.ghost:hover {
     grid-template-columns: 1fr;
     padding: 1rem;
     gap: 1.5rem;
+    position: relative;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
   }
 
   .sidebar {
@@ -1737,26 +1759,31 @@ button.ghost:hover {
     z-index: 1000;
     transition: transform 0.3s ease-in-out;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    padding: 1.5rem;
   }
 
   .sidebar.active {
     transform: translateX(320px);
   }
 
-  .mobile-menu-btn {
-    display: block;
+  /* Overlay when mobile menu is open */
+  .sidebar-overlay {
+    display: none;
     position: fixed;
-    top: 1rem;
-    left: 1rem;
-    z-index: 1001;
-    background: white;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+    opacity: 1;
   }
 
   .app-main {
