@@ -1001,177 +1001,176 @@ export const InvoiceBuilder = () => {
         </section>
 
         <section className={previewPanelClassName} ref={previewRef}>
-          <div className="preview-header">
-            <div>
-              <h2>Invoice</h2>
-              <p className="invoice-number">{formState.meta.invoiceNumber}</p>
-            </div>
-            <div className="preview-meta">
-              <p>
-                <span>Issued:</span> {formState.meta.issueDate}
-              </p>
-              <p>
-                <span>Due:</span> {formState.meta.dueDate}
-              </p>
-              {formState.meta.purchaseOrder ? (
+          <div className="invoice-document">
+            <header className="invoice-doc-header">
+              <div className="invoice-doc-brand">
+                <h2>{ORGANIZATION.displayName}</h2>
+                <p>{ORGANIZATION.legalName}</p>
                 <p>
-                  <span>PO:</span> {formState.meta.purchaseOrder}
+                  {ORGANIZATION.address.line1}
+                  {ORGANIZATION.address.line2 ? `, ${ORGANIZATION.address.line2}` : ''}
                 </p>
-              ) : null}
-              {formState.meta.reference ? (
                 <p>
-                  <span>Ref:</span> {formState.meta.reference}
+                  {ORGANIZATION.address.city}, {ORGANIZATION.address.state} {ORGANIZATION.address.postalCode},
+                  {' '}
+                  {ORGANIZATION.address.country}
                 </p>
-              ) : null}
-            </div>
-          </div>
+                <p>{ORGANIZATION.taxRegistration}</p>
+                <p>
+                  {ORGANIZATION.contact.email} • {ORGANIZATION.contact.phone}
+                </p>
+                <p>{ORGANIZATION.contact.website}</p>
+              </div>
 
-          <div className="preview-entities">
-            <div>
-              <h4>From</h4>
-              <p>{ORGANIZATION.legalName}</p>
-              <p>{ORGANIZATION.address.line1}</p>
-              <p>
-                {ORGANIZATION.address.line2}
-                {ORGANIZATION.address.line2 ? ', ' : ''}
-                {ORGANIZATION.address.city}, {ORGANIZATION.address.state} {ORGANIZATION.address.postalCode}
-              </p>
-              <p>{ORGANIZATION.address.country}</p>
-              <p>{ORGANIZATION.taxRegistration}</p>
-              <p>{ORGANIZATION.contact.email}</p>
-              <p>{ORGANIZATION.contact.phone}</p>
-            </div>
-            <div>
-              <h4>Bill to</h4>
-              <p>{formState.client.companyName || '—'}</p>
-              {formState.client.contactName ? <p>Attn: {formState.client.contactName}</p> : null}
-              {formState.client.addressLine1 ? <p>{formState.client.addressLine1}</p> : null}
-              {formState.client.addressLine2 ? <p>{formState.client.addressLine2}</p> : null}
-              <p>
-                {[formState.client.city, formState.client.state].filter(Boolean).join(', ')}{' '}
-                {formState.client.postalCode}
-              </p>
-              <p>{formState.client.country}</p>
-              {formState.client.gstin ? <p>Tax ID: {formState.client.gstin}</p> : null}
-              {formState.client.email ? <p>{formState.client.email}</p> : null}
-              {formState.client.phone ? <p>{formState.client.phone}</p> : null}
-            </div>
-            <div>
-              <h4>Engagement</h4>
-              <p>{formState.meta.projectName || '—'}</p>
-              {formState.additionalNote ? (
-                <p className="highlight-note">{formState.additionalNote}</p>
-              ) : null}
-            </div>
-          </div>
+              <div className="invoice-doc-title">
+                <h1>Invoice</h1>
+                <dl className="invoice-doc-meta">
+                  <div>
+                    <dt>Invoice #</dt>
+                    <dd>{formState.meta.invoiceNumber}</dd>
+                  </div>
+                  <div>
+                    <dt>Issue date</dt>
+                    <dd>{formState.meta.issueDate}</dd>
+                  </div>
+                  <div>
+                    <dt>Due date</dt>
+                    <dd>{formState.meta.dueDate}</dd>
+                  </div>
+                  <div>
+                    <dt>Currency</dt>
+                    <dd>{formState.currency}</dd>
+                  </div>
+                  {formState.meta.purchaseOrder ? (
+                    <div>
+                      <dt>PO</dt>
+                      <dd>{formState.meta.purchaseOrder}</dd>
+                    </div>
+                  ) : null}
+                  {formState.meta.reference ? (
+                    <div>
+                      <dt>Reference</dt>
+                      <dd>{formState.meta.reference}</dd>
+                    </div>
+                  ) : null}
+                </dl>
+              </div>
+            </header>
 
-          <div className="preview-table">
-            <div className="preview-table-head">
-              <span>Service</span>
-              <span>Description</span>
-              <span>Qty</span>
-              <span>Unit price</span>
-              <span>Discount</span>
-              <span>Amount</span>
-            </div>
-            {formState.lineItems.map((item) => {
-              const service = item.serviceId ? serviceLookup[item.serviceId] : undefined
-              const lineBase = item.quantity * item.unitPrice
-              const lineDiscount = (lineBase * item.discountRate) / 100
-              const lineTotal = lineBase - lineDiscount
-              return (
-                <div className="preview-table-row" key={item.id}>
-                  <span>
-                    {service ? service.name : 'Custom service'}
-                    {service ? <em>{service.category}</em> : null}
-                  </span>
-                  <span>
-                    {item.description || '—'}
-                    {item.notes ? <small>{item.notes}</small> : null}
-                  </span>
-                  <span>{item.quantity}</span>
-                  <span>{currencyFormatter.format(item.unitPrice)}</span>
-                  <span>{item.discountRate ? `${item.discountRate}%` : '—'}</span>
-                  <span>{currencyFormatter.format(lineTotal)}</span>
+            <section className="invoice-doc-parties">
+              <div className="invoice-doc-party">
+                <h3>Bill to</h3>
+                <p className="party-name">{formState.client.companyName || '—'}</p>
+                {formState.client.contactName ? <p>Attn: {formState.client.contactName}</p> : null}
+                {formState.client.addressLine1 ? <p>{formState.client.addressLine1}</p> : null}
+                {formState.client.addressLine2 ? <p>{formState.client.addressLine2}</p> : null}
+                <p>
+                  {[formState.client.city, formState.client.state].filter(Boolean).join(', ')} {formState.client.postalCode}
+                </p>
+                <p>{formState.client.country}</p>
+                {formState.client.gstin ? <p>Tax ID: {formState.client.gstin}</p> : null}
+                {formState.client.email ? <p>{formState.client.email}</p> : null}
+                {formState.client.phone ? <p>{formState.client.phone}</p> : null}
+              </div>
+              <div className="invoice-doc-party">
+                <h3>Engagement</h3>
+                <p className="party-name">{formState.meta.projectName || '—'}</p>
+                {formState.additionalNote ? <p className="invoice-doc-note">{formState.additionalNote}</p> : null}
+              </div>
+            </section>
+
+            <section className="invoice-doc-items">
+              <table className="invoice-table-doc">
+                <thead>
+                  <tr>
+                    <th style={{ width: '52%' }}>Item / Description</th>
+                    <th style={{ width: '10%' }} className="num">
+                      Qty
+                    </th>
+                    <th style={{ width: '14%' }} className="num">
+                      Rate
+                    </th>
+                    <th style={{ width: '10%' }} className="num">
+                      Disc.
+                    </th>
+                    <th style={{ width: '14%' }} className="num">
+                      Amount
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {formState.lineItems.map((item) => {
+                    const service = item.serviceId ? serviceLookup[item.serviceId] : undefined
+                    const lineBase = item.quantity * item.unitPrice
+                    const lineDiscount = (lineBase * item.discountRate) / 100
+                    const lineTotal = lineBase - lineDiscount
+                    return (
+                      <tr key={item.id}>
+                        <td>
+                          <div className="item-title">{service ? service.name : 'Custom service'}</div>
+                          <div className="item-desc">{item.description || '—'}</div>
+                          {item.notes ? <div className="item-notes">{item.notes}</div> : null}
+                        </td>
+                        <td className="num">{item.quantity}</td>
+                        <td className="num">{currencyFormatter.format(item.unitPrice)}</td>
+                        <td className="num">{item.discountRate ? `${item.discountRate}%` : '—'}</td>
+                        <td className="num">{currencyFormatter.format(lineTotal)}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </section>
+
+            <section className="invoice-doc-summary">
+              <table className="invoice-totals-doc">
+                <tbody>
+                  <tr>
+                    <td>Subtotal</td>
+                    <td className="num">{currencyFormatter.format(totals.subtotal)}</td>
+                  </tr>
+                  <tr>
+                    <td>Discounts</td>
+                    <td className="num">{currencyFormatter.format(totals.discountTotal)}</td>
+                  </tr>
+                  <tr>
+                    <td>Taxable amount</td>
+                    <td className="num">{currencyFormatter.format(totals.taxableAmount)}</td>
+                  </tr>
+                  <tr>
+                    <td>Tax @ {formState.taxRate.toFixed(2)}%</td>
+                    <td className="num">{currencyFormatter.format(totals.taxAmount)}</td>
+                  </tr>
+                  <tr className="grand">
+                    <td>Total due</td>
+                    <td className="num">{currencyFormatter.format(totals.total)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+
+            <footer className="invoice-doc-footer">
+              <div className="invoice-doc-payment">
+                <h3>Payment details</h3>
+                <p>Accepted methods: {acceptedChannelSummary || 'Bank transfer'}</p>
+                <div className="banking">
+                  <p>
+                    Beneficiary: <strong>{ORGANIZATION.bank.beneficiary}</strong>
+                  </p>
+                  <p>
+                    Bank: {ORGANIZATION.bank.bankName} • A/C No: {ORGANIZATION.bank.accountNumber}
+                  </p>
+                  <p>
+                    IFSC: {ORGANIZATION.bank.ifsc} • SWIFT: {ORGANIZATION.bank.swift}
+                  </p>
                 </div>
-              )
-            })}
-          </div>
-
-          <div className="totals-panel">
-            <div>
-              <span>Subtotal</span>
-              <span>{currencyFormatter.format(totals.subtotal)}</span>
-            </div>
-            <div>
-              <span>Discounts</span>
-              <span>{currencyFormatter.format(totals.discountTotal)}</span>
-            </div>
-            <div>
-              <span>Taxable amount</span>
-              <span>{currencyFormatter.format(totals.taxableAmount)}</span>
-            </div>
-            <div>
-              <span>Tax @ {formState.taxRate.toFixed(2)}%</span>
-              <span>{currencyFormatter.format(totals.taxAmount)}</span>
-            </div>
-            <div className="grand-total">
-              <span>Total due</span>
-              <span>{currencyFormatter.format(totals.total)}</span>
-            </div>
-          </div>
-
-          <div className="gateway-block">
-            <h4>Payment processing</h4>
-            <p>
-              Online collections managed through <strong>{PAYMENT_GATEWAY.providerName}</strong>. Current status:{' '}
-              <span className={`gateway-tag ${PAYMENT_GATEWAY.status.toLowerCase()}`}>{PAYMENT_GATEWAY.status}</span>
-            </p>
-            <p className="payment-method-line">
-              Accepted methods:{' '}
-              <strong>{acceptedChannelSummary || 'Bank transfer'}</strong>
-            </p>
-            <div className="gateway-details">
-              <div>
-                <span className="label">Primary channel</span>
-                <strong>{preferredGatewayChannel?.label ?? '—'}</strong>
-                {preferredGatewayChannel ? (
-                  <small>
-                    SLA {preferredGatewayChannel.slaMinutes} min • Success{' '}
-                    {preferredGatewayChannel.successRate.toFixed(1)}%
-                  </small>
-                ) : null}
               </div>
-              <div>
-                <span className="label">Merchant ID</span>
-                <strong>{PAYMENT_GATEWAY.credentials.merchantId}</strong>
-                <small>Webhook: {PAYMENT_GATEWAY.credentials.webhookUrl}</small>
+              <div className="invoice-doc-terms">
+                <h3>Terms</h3>
+                <p>{formState.terms}</p>
+                <p className="footer-note">Thank you for partnering with {ORGANIZATION.displayName}.</p>
               </div>
-            </div>
-            <div className="gateway-channel-list">
-              {gatewayChannels.map((channel) => (
-                <span key={channel.id} className={`gateway-chip ${channel.status.toLowerCase()}`}>
-                  {channel.label} • {channel.successRate.toFixed(1)}%
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="terms-block">
-            <h4>Payment Instructions</h4>
-            <p>{formState.terms}</p>
-            <div className="banking">
-              <p>
-                Beneficiary: <strong>{ORGANIZATION.bank.beneficiary}</strong>
-              </p>
-              <p>
-                Bank: {ORGANIZATION.bank.bankName} • A/C No: {ORGANIZATION.bank.accountNumber}
-              </p>
-              <p>
-                IFSC: {ORGANIZATION.bank.ifsc} • SWIFT: {ORGANIZATION.bank.swift}
-              </p>
-            </div>
-            <p className="footer-note">Thank you for partnering with {ORGANIZATION.displayName}.</p>
+            </footer>
           </div>
         </section>
       </main>
