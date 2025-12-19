@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import './App.css'
 import {
   ACTIVITY_LOG,
@@ -55,6 +55,56 @@ const summarize = (records: InvoiceRecord[]) => {
 
 function App() {
   const [activeView, setActiveView] = useState<AppView>('overview')
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobileView, setIsMobileView] = useState(false)
+  
+  // Check if mobile view on mount and on resize
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobileView(window.innerWidth <= 1024)
+    }
+    
+    // Initial check
+    checkIfMobile()
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', checkIfMobile)
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkIfMobile)
+  }, [])
+  
+  // Close mobile menu when view changes
+  useEffect(() => {
+    if (isMobileView) {
+      setIsMobileMenuOpen(false)
+    }
+  }, [activeView, isMobileView])
+  
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const sidebar = document.querySelector('.sidebar')
+      const menuButton = document.querySelector('.mobile-menu-btn')
+      
+      if (isMobileView && isMobileMenuOpen && 
+          !sidebar?.contains(event.target as Node) && 
+          !menuButton?.contains(event.target as Node)) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMobileMenuOpen, isMobileView])
+  
+  const toggleMobileMenu = () => {
+    if (isMobileView) {
+      setIsMobileMenuOpen(!isMobileMenuOpen)
+    }
+  }
 
   const overviewStats = useMemo(() => summarize(INVOICE_LEDGER), [])
   const recentInvoices = useMemo(
@@ -616,7 +666,40 @@ function App() {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
+      {isMobileView && (
+        <button 
+          className="mobile-menu-btn" 
+          onClick={toggleMobileMenu}
+          aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={isMobileMenuOpen}
+        >
+          {isMobileMenuOpen ? (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          ) : (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          )}
+        </button>
+      )}
+      
+      {isMobileView && isMobileMenuOpen && (
+        <div 
+          className="sidebar-overlay active" 
+          onClick={toggleMobileMenu}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Escape' && toggleMobileMenu()}
+          aria-label="Close menu"
+        />
+      )}
+      
+      <aside 
+        className={`sidebar ${isMobileMenuOpen ? 'active' : ''}`}
+        aria-hidden={!isMobileMenuOpen && isMobileView}
+      >
         <div className="brand">
           <span className="glyph">A</span>
           <div>

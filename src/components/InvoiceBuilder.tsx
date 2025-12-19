@@ -135,10 +135,6 @@ export const InvoiceBuilder = () => {
   const previewRef = useRef<HTMLDivElement>(null)
   const hasUserSelectedLayout = useRef(false)
   const gatewayChannels = useMemo(() => PAYMENT_GATEWAY.channels.filter((channel) => channel.status !== 'Disabled'), [])
-  const preferredGatewayChannel = useMemo(
-    () => gatewayChannels.find((channel) => channel.status === 'Enabled') ?? gatewayChannels[0],
-    [gatewayChannels],
-  )
   const acceptedChannelSummary = useMemo(() => gatewayChannels.map((channel) => channel.label).join(' • '), [gatewayChannels])
 
   useEffect(() => {
