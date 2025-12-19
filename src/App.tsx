@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import './App.css'
 import {
   ACTIVITY_LOG,
@@ -55,6 +55,31 @@ const summarize = (records: InvoiceRecord[]) => {
 
 function App() {
   const [activeView, setActiveView] = useState<AppView>('overview')
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  
+  // Close mobile menu when view changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [activeView])
+  
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const sidebar = document.querySelector('.sidebar')
+      const menuButton = document.querySelector('.mobile-menu-btn')
+      
+      if (isMobileMenuOpen && 
+          !sidebar?.contains(event.target as Node) && 
+          !menuButton?.contains(event.target as Node)) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMobileMenuOpen])
 
   const overviewStats = useMemo(() => summarize(INVOICE_LEDGER), [])
   const recentInvoices = useMemo(
