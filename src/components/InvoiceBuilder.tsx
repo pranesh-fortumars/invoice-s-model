@@ -7,6 +7,7 @@ import type {
   InvoiceFormState,
   LineItem,
   Service,
+  StoredInvoice,
 } from '../types'
 
 const currencyLocaleMap: Record<InvoiceFormState['currency'], string> = {
@@ -53,6 +54,24 @@ const addDays = (date: Date, days: number) => {
 
 const generateId = () => Math.random().toString(36).slice(2, 10)
 
+const INVOICE_ARCHIVE_STORAGE_KEY = 'invoice-archive.v1'
+
+const safeJsonParse = <T,>(value: string | null): T | null => {
+  if (!value) {
+    return null
+  }
+  try {
+    return JSON.parse(value) as T
+  } catch {
+    return null
+  }
+}
+
+const cloneFormState = (state: InvoiceFormState): InvoiceFormState => {
+  const serialized = JSON.stringify(state)
+  return JSON.parse(serialized) as InvoiceFormState
+}
+
 const createLineItem = (service?: Service): LineItem => ({
   id: generateId(),
   serviceId: service?.id ?? '',
@@ -94,6 +113,13 @@ const serviceLookup = SERVICE_CATALOG.reduce<Record<string, Service>>((acc, serv
 export const InvoiceBuilder = () => {
   const [formState, setFormState] = useState<InvoiceFormState>(() => createInitialState())
   const [layoutMode, setLayoutMode] = useState<'split' | 'form' | 'preview'>('form')
+  const [savedInvoices, setSavedInvoices] = useState<StoredInvoice[]>(() => {
+    const stored = safeJsonParse<StoredInvoice[]>(
+      typeof window === 'undefined' ? null : window.localStorage.getItem(INVOICE_ARCHIVE_STORAGE_KEY),
+    )
+    return Array.isArray(stored) ? stored : []
+  })
+  const [selectedSavedInvoiceId, setSelectedSavedInvoiceId] = useState('')
   const previewRef = useRef<HTMLDivElement>(null)
   const hasUserSelectedLayout = useRef(false)
   const gatewayChannels = useMemo(() => PAYMENT_GATEWAY.channels.filter((channel) => channel.status !== 'Disabled'), [])
@@ -129,6 +155,13 @@ export const InvoiceBuilder = () => {
     return () => mediaQuery.removeEventListener('change', listener)
   }, [])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+    window.localStorage.setItem(INVOICE_ARCHIVE_STORAGE_KEY, JSON.stringify(savedInvoices))
+  }, [savedInvoices])
+
   const currencyFormatter = useMemo(
     () =>
       new Intl.NumberFormat(currencyLocaleMap[formState.currency], {
@@ -157,6 +190,53 @@ export const InvoiceBuilder = () => {
       total,
     }
   }, [formState.lineItems, formState.taxRate])
+
+  const validateInvoice = (state: InvoiceFormState) => {
+    const issues: string[] = []
+    if (!state.meta.invoiceNumber.trim()) {
+      issues.push('Invoice number is required.')
+    }
+    if (!state.meta.issueDate.trim()) {
+      issues.push('Issue date is required.')
+    }
+    if (!state.meta.dueDate.trim()) {
+      issues.push('Due date is required.')
+    }
+    if (state.meta.issueDate && state.meta.dueDate) {
+      const issue = new Date(state.meta.issueDate)
+      const due = new Date(state.meta.dueDate)
+      if (!Number.isNaN(issue.getTime()) && !Number.isNaN(due.getTime()) && due.getTime() < issue.getTime()) {
+        issues.push('Due date must be on or after issue date.')
+      }
+    }
+    if (!state.client.companyName.trim()) {
+      issues.push('Bill to company name is required.')
+    }
+    if (!state.client.addressLine1.trim()) {
+      issues.push('Bill to address line 1 is required.')
+    }
+    if (!state.client.city.trim()) {
+      issues.push('Bill to city is required.')
+    }
+    if (!state.client.state.trim()) {
+      issues.push('Bill to state is required.')
+    }
+    if (!state.client.postalCode.trim()) {
+      issues.push('Bill to postal code is required.')
+    }
+    if (!state.client.country.trim()) {
+      issues.push('Bill to country is required.')
+    }
+    if (!state.lineItems.length) {
+      issues.push('At least one line item is required.')
+    }
+    if (
+      state.lineItems.some((item) => !item.description.trim() || item.quantity <= 0 || item.unitPrice < 0 || item.discountRate < 0)
+    ) {
+      issues.push('Line items must include a description, quantity > 0, non-negative unit price, and non-negative discount.')
+    }
+    return issues
+  }
 
   const handleClientSelectChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const selectedId = event.target.value
@@ -262,12 +342,102 @@ export const InvoiceBuilder = () => {
     }))
   }
 
+  const handleNewInvoice = () => {
+    setFormState(createInitialState())
+    setSelectedSavedInvoiceId('')
+    previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const handleRegenerateInvoiceNumber = () => {
+    const today = new Date()
+    const invoiceNumber = `ADS-${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(
+      2,
+      '0',
+    )}-${generateId()}`
+    setFormState((prev) => ({
+      ...prev,
+      meta: {
+        ...prev.meta,
+        invoiceNumber,
+      },
+    }))
+  }
+
+  const handleSaveInvoiceCopy = () => {
+    const issues = validateInvoice(formState)
+    if (issues.length && typeof window !== 'undefined') {
+      const proceed = window.confirm(`Some details are missing:\n\n${issues.join('\n')}\n\nSave anyway?`)
+      if (!proceed) {
+        return
+      }
+    }
+
+    const savedAt = new Date().toISOString()
+    const invoice: StoredInvoice = {
+      id: generateId(),
+      invoiceNumber: formState.meta.invoiceNumber,
+      savedAt,
+      formState: cloneFormState(formState),
+    }
+    setSavedInvoices((prev) => [invoice, ...prev])
+    setSelectedSavedInvoiceId(invoice.id)
+  }
+
+  const handleLoadSavedInvoice = (id: string) => {
+    const match = savedInvoices.find((inv) => inv.id === id)
+    if (!match) {
+      return
+    }
+    setFormState(cloneFormState(match.formState))
+    setSelectedSavedInvoiceId(match.id)
+    hasUserSelectedLayout.current = true
+    setLayoutMode('preview')
+    setTimeout(() => previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0)
+  }
+
+  const handleDeleteSavedInvoice = (id: string) => {
+    if (typeof window !== 'undefined') {
+      const ok = window.confirm('Delete this saved invoice copy?')
+      if (!ok) {
+        return
+      }
+    }
+    setSavedInvoices((prev) => prev.filter((inv) => inv.id !== id))
+    if (selectedSavedInvoiceId === id) {
+      setSelectedSavedInvoiceId('')
+    }
+  }
+
+  const handleExportSavedInvoice = (id: string) => {
+    const match = savedInvoices.find((inv) => inv.id === id)
+    if (!match || typeof window === 'undefined') {
+      return
+    }
+    const payload = JSON.stringify(match, null, 2)
+    const blob = new Blob([payload], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `${match.invoiceNumber || 'invoice'}-${match.id}.json`
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    URL.revokeObjectURL(url)
+  }
+
   const handleGenerateInvoice = () => {
     previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   const handlePrintInvoice = () => {
     if (typeof window !== 'undefined') {
+      const issues = validateInvoice(formState)
+      if (issues.length) {
+        const proceed = window.confirm(`Some details are missing:\n\n${issues.join('\n')}\n\nContinue to print?`)
+        if (!proceed) {
+          return
+        }
+      }
       window.print()
     }
   }
@@ -314,6 +484,50 @@ export const InvoiceBuilder = () => {
         <button type="button" className="outline" onClick={handlePrintInvoice}>
           Print Invoice
         </button>
+        <button type="button" className="outline" onClick={handleSaveInvoiceCopy}>
+          Save copy
+        </button>
+        <button type="button" className="ghost" onClick={handleRegenerateInvoiceNumber}>
+          Regenerate invoice #
+        </button>
+        <button type="button" className="ghost" onClick={handleNewInvoice}>
+          New invoice
+        </button>
+        <div className="archive-controls" aria-label="Saved invoice archive">
+          <select
+            value={selectedSavedInvoiceId}
+            onChange={(event) => {
+              const nextId = event.target.value
+              setSelectedSavedInvoiceId(nextId)
+              if (nextId) {
+                handleLoadSavedInvoice(nextId)
+              }
+            }}
+          >
+            <option value="">Saved copies</option>
+            {savedInvoices.map((inv) => (
+              <option key={inv.id} value={inv.id}>
+                {inv.invoiceNumber} • {new Date(inv.savedAt).toLocaleDateString(currencyLocaleMap[formState.currency])}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="ghost"
+            disabled={!selectedSavedInvoiceId}
+            onClick={() => handleExportSavedInvoice(selectedSavedInvoiceId)}
+          >
+            Export JSON
+          </button>
+          <button
+            type="button"
+            className="ghost"
+            disabled={!selectedSavedInvoiceId}
+            onClick={() => handleDeleteSavedInvoice(selectedSavedInvoiceId)}
+          >
+            Delete
+          </button>
+        </div>
         <div className="layout-toggle" role="group" aria-label="Invoice layout mode">
           <button
             type="button"

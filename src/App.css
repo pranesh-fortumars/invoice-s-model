@@ -642,6 +642,24 @@ button.ghost:hover {
   margin-left: auto;
 }
 
+.archive-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(205, 214, 229, 0.8);
+  background: #ffffff;
+}
+
+.archive-controls select {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.7rem;
+  background: #fff;
+  color: var(--ink-700);
+}
+
 .layout-toggle button {
   border: none;
   background: transparent;
@@ -1538,15 +1556,62 @@ button.ghost:hover {
 }
 
 @media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  body {
+    color: #000;
+  }
+
   .app-shell {
+    grid-template-columns: 1fr;
+    gap: 0;
+    width: 100%;
+    margin: 0;
     box-shadow: none;
-    padding: 1.5rem;
+    padding: 0;
+  }
+
+  .sidebar,
+  .app-header {
+    display: none !important;
   }
 
   .action-toolbar,
   .line-item-actions,
   button {
     display: none !important;
+  }
+
+  .invoice-builder {
+    padding: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  .app-main {
+    padding: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  .invoice-builder .page-header {
+    border-bottom: 1px solid #000;
+  }
+
+  .invoice-builder .preview-panel {
+    max-width: none;
+  }
+
+  .invoice-builder .preview-table-row,
+  .invoice-builder .preview-entities,
+  .invoice-builder .totals-panel,
+  .invoice-builder .gateway-block,
+  .invoice-builder .terms-block {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .invoice-builder .workspace {
