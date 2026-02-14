@@ -1709,31 +1709,123 @@ button.ghost:hover {
   }
 }
 
-@media (max-width: 768px) {
+/* Mobile menu button */
+.mobile-menu-btn {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1001;
+  background: var(--accent-600);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.mobile-menu-btn:hover {
+  background: var(--accent-700);
+  transform: scale(1.05);
+}
+
+.mobile-menu-btn:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 1024px) {
   .app-shell {
-    padding: 1.75rem;
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: 1.5rem;
+    position: relative;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -320px;
+    width: 280px;
+    height: 100vh;
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    padding: 1.5rem;
+  }
+
+  .sidebar.active {
+    transform: translateX(320px);
+  }
+
+  /* Overlay when mobile menu is open */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+  }
+
+  .app-main {
+    padding: 0;
   }
 
   .page-header {
     flex-direction: column;
-    text-align: left;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-top: 3rem;
   }
 
   .org-contact-block {
     text-align: left;
+    width: 100%;
   }
 
   .operations-grid {
-    gap: 1.25rem;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    padding: 0.75rem;
   }
 
-  .settings-row {
-    flex-direction: column;
-    align-items: flex-start;
+  .invoice-builder {
+    padding: 1rem;
   }
 
-  .toggle {
-    align-self: flex-start;
+  .invoice-builder .workspace {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .invoice-builder .form-panel,
+  .invoice-builder .preview-panel {
+    width: 100%;
+    max-width: 100%;
   }
 
   .invoice-builder .field-grid,
@@ -1743,46 +1835,81 @@ button.ghost:hover {
   .invoice-builder .preview-table-row,
   .invoice-builder .preview-entities {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .invoice-builder .field {
+    width: 100%;
   }
 
   .invoice-builder .field-wide {
-    grid-column: span 1;
+    grid-column: 1 / -1;
   }
 
   .invoice-builder .line-item-actions {
-    justify-content: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
   }
 
-  .invoice-builder .line-items-track {
-    min-width: 640px;
+  .action-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .action-toolbar button {
+    flex: 1 1 calc(50% - 0.5rem);
+    min-width: auto;
+  }
+
+  .invoice-doc-header,
+  .invoice-doc-parties,
+  .invoice-doc-summary {
+    padding: 1rem;
+  }
+
+  .invoice-table-doc {
+    font-size: 0.85rem;
+  }
+
+  .invoice-table-doc th,
+  .invoice-table-doc td {
+    padding: 0.5rem 0.25rem;
+  }
+
+  .invoice-totals-doc {
+    width: 100%;
+  }
+
+  .draft-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .draft-actions {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .layout-toggle {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.3rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
 
   .layout-toggle button {
-    width: 100%;
+    flex: 1 1 calc(50% - 0.5rem);
+    min-width: auto;
   }
 
   .gateway-actions {
-    width: 100%;
     flex-direction: column;
-    align-items: stretch;
+    gap: 0.5rem;
   }
 
-  .gateway-summary {
-    grid-template-columns: 1fr;
-  }
-
-  .transaction-row {
-    grid-template-columns: 1fr;
-  }
-
-  .gateway-details {
-    grid-template-columns: 1fr;
+  .gateway-actions button {
+    width: 100%;
   }
 }
 
